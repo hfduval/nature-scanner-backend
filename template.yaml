@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  nature-scanner-backend
+
+  Sample SAM Template for nature-scanner-backend
+
+# More info about Globals: https://github.com/awslabs/serverless-application-model/blob/master/docs/globals.rst
+Globals:
+  Function:
+    Timeout: 15
+    MemorySize: 128
+
+Resources:
+  UploadToS3Function:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/
+      Handler: app.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref NatureScannerImagesBucket    
+      Environment:
+        Variables:
+          IMAGE_BUCKET: !Ref NatureScannerImagesBucket
+      Events:
+        Api:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /api/nature-scanner/upload
+            Method: get
+    
+  NatureScannerImagesBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub ${AWS::StackName}-nature-scanner-images-bucket
+
+Outputs:
+  # ServerlessRestApi is an implicit API created out of Events key under Serverless::Function
+  # Find out more about other implicit resources you can reference within SAM
+  # https://github.com/awslabs/serverless-application-model/blob/master/docs/internals/generated_resources.rst#api
+  UploadToS3Api:
+    Description: "API Gateway endpoint URL for Prod stage for UploadToS3 function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/nature-scanner/upload/"
+  UploadToS3Function:
+    Description: "UploadToS3 Lambda Function ARN"
+    Value: !GetAtt UploadToS3Function.Arn
+  UploadToS3FunctionIamRole:
+    Description: "Implicit IAM Role created for UploadToS3 function"
+    Value: !GetAtt UploadToS3FunctionRole.Arn
+  NatureScannerImagesBucket:
+    Description: "Bucket containing all uploaded images"
+    Value: !Ref NatureScannerImagesBucket
