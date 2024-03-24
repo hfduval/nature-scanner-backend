@@ -16,7 +16,7 @@ def lambda_handler(event, context):
 
         response = {
             'statusCode': 200,
-            'headers': {
+            'body': {
                 'url': presigned_url
             }
         }
