@@ -1,3 +1,4 @@
+import json
 import uuid
 import logging
 import boto3
@@ -8,17 +9,20 @@ def lambda_handler(event, context):
         s3_client = boto3.client('s3')
 
         id = str(uuid.uuid4())
+        key = f"{id}.jpg"
+
         presigned_url = s3_client.generate_presigned_url('put_object', Params={
             'Bucket': os.getenv('IMAGE_BUCKET'),
-            'Key': f"{id}.jpg",
+            'Key': key,
             'Expires': 3600,
         }, HttpMethod="put")
 
         response = {
             'statusCode': 200,
-            'body': {
-                'url': presigned_url
-            }
+            'body': json.dumps({
+                'url': presigned_url,
+                'key': key,
+            })
         }
     
     except Exception as e:
