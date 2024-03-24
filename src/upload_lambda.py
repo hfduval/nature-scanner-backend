@@ -11,11 +11,10 @@ def lambda_handler(event, context):
         id = str(uuid.uuid4())
         key = f"{id}.jpg"
 
-        presigned_url = s3_client.generate_presigned_url('put_object', Params={
-            'Bucket': os.getenv('IMAGE_BUCKET'),
-            'Key': key,
-            'Expires': 3600,
-        }, HttpMethod="put")
+        presigned_url = s3_client.generate_presigned_url('put_object',
+                                                         Params={'Bucket': os.getenv('IMAGE_BUCKET'),
+                                                                 'Key': key},
+                                                         ExpiresIn=3600)
 
         response = {
             'statusCode': 200,
