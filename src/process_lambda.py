@@ -4,8 +4,11 @@ import boto3
 import os
 import requests
 
-
+# takes in request body {"img_id": "ID HERE"} as parameter
 def lambda_handler(event, context):
+    body = json.loads(event.get('body', '{}'))
+    img_id = body.get('img_id', None)
+
     try:
         s3_client = boto3.client('s3')
 
@@ -15,9 +18,6 @@ def lambda_handler(event, context):
             "Authorization": f"Bearer {api_key}"
         }
 
-        # fixme: 2400 is an existing image on the bucket for testing purposes, real img_id should be passed from
-        #  function param
-        img_id = "2400"
         key = f"{img_id}.jpg"
 
         presigned_url = s3_client.generate_presigned_url('get_object',
