@@ -32,7 +32,28 @@ Resources:
           Properties:
             Path: /api/nature-scanner/upload
             Method: get
-    
+
+  ProcessImageFunction:
+    Type: AWS::Serverless::Function # More info about Function Resource: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#awsserverlessfunction
+    Properties:
+      CodeUri: src/
+      Handler: process_lambda.lambda_handler
+      Runtime: python3.9
+      Architectures:
+        - x86_64
+      Policies:
+        - S3CrudPolicy:
+            BucketName: !Ref NatureScannerImagesBucket
+      Environment:
+        Variables:
+          IMAGE_BUCKET: !Ref NatureScannerImagesBucket
+      Events:
+        Api:
+          Type: Api # More info about API Event Source: https://github.com/awslabs/serverless-application-model/blob/master/versions/2016-10-31.md#api
+          Properties:
+            Path: /api/nature-scanner/process
+            Method: get
+
   NatureScannerImagesBucket:
     Type: AWS::S3::Bucket
     Properties:
@@ -51,6 +72,15 @@ Outputs:
   UploadToS3FunctionIamRole:
     Description: "Implicit IAM Role created for UploadToS3 function"
     Value: !GetAtt UploadToS3FunctionRole.Arn
+  ProcessImageApi:
+    Description: "API Gateway endpoint URL for Prod stage for ProcessImage function"
+    Value: !Sub "https://${ServerlessRestApi}.execute-api.${AWS::Region}.amazonaws.com/Prod/api/nature-scanner/process/"
+  ProcessImageFunction:
+    Description: "ProcessImage Lambda Function ARN"
+    Value: !GetAtt ProcessImageFunction.Arn
+  ProcessImageFunctionIamRole:
+    Description: "Implicit IAM Role created for ProcessImage function"
+    Value: !GetAtt ProcessImageFunctionRole.Arn
   NatureScannerImagesBucket:
     Description: "Bucket containing all uploaded images"
     Value: !Ref NatureScannerImagesBucket
